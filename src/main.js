@@ -57,21 +57,35 @@ async function onFormSubmit(event){
             height: '88',
             message: 'Please, fill the form!',
         })
+        hideLoader();
         return;
     }
     try {
         showLoader();    
-    const data = await getImages(query, currentPage);
-    maxPage = Math.ceil(data.totalHits / pageSize);
-    renderGallery(data.hits);
-    lightbox.refresh();       
+        const data = await getImages(query, currentPage);
+        maxPage = Math.ceil(data.totalHits / pageSize);
+        if (!data.hits.length) {
+            iziToast.error({
+                        position: 'topRight',
+                        color: '#EF4040',
+                        messageColor: '#FAFAFB',
+                        maxWidth: '432px',
+                        height: '88',
+                        message: 'Sorry, there are no images matching your search query. Please try again!',
+            });
+            hideLoadMore();
+            hideLoader();
+        } else {
+           renderGallery(data.hits);
+            lightbox.refresh();
+            checkBtnStatus();
+        } 
     }
     
     catch(err) {
         console.log(error);
     }
     hideLoader();
-    checkBtnStatus();
     event.target.reset();
 }
 
@@ -85,6 +99,7 @@ async function onLoadMoreClick() {
     catch(err) {
         console.log(error);
     }
+    myScroll();
     checkBtnStatus();
     hideLoader();
 }
@@ -99,6 +114,13 @@ function checkBtnStatus(){
     } else {
         showLoadMore();
 }
+}
+function myScroll() {
+    const height = imageGallery.firstChild.getBoundingClientRect().height;
+    scrollBy({
+        top: height*2,
+        behavior: 'smooth',
+    })
 }
 
     
